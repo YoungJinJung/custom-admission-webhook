@@ -1,17 +1,13 @@
----
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: simple-kubernetes-webhook
-  name: simple-kubernetes-webhook
-  namespace: default
+    app: custom-admission-webhook
+  name: custom-admission-webhook
+  namespace: kube-system
 spec:
-  type: NodePort
   ports:
     - port: 443
-      protocol: TCP
       targetPort: 443
-      nodePort: 30100
   selector:
-    app: simple-kubernetes-webhook
+    app: custom-admission-webhook

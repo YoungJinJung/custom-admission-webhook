@@ -11,17 +11,23 @@ import (
 	"github.com/YoungJinJung/custom-admission-webhook/pkg/admission"
 	admissionv1 "k8s.io/api/admission/v1"
 )
+const (
+	logEnvName = "LOG_LEVEL"
+	tlsEnvName = "TLS"
+	healthURI = "/healthz="
+	validateURI = "/validate"
+)
 
 func main() {
 	setLogger()
 
 	// handle our core application
-	http.HandleFunc("/validate-pods", ServeValidatePods)
-	http.HandleFunc("/health", ServeHealth)
+	http.HandleFunc(validateURI, ServeValidatePods)
+	http.HandleFunc(healthURI, ServeHealth)
 
 	// start the server
 	// listens to clear text http on port 8080 unless TLS env var is set to "true"
-	if os.Getenv("TLS") == "true" {
+	if os.Getenv(tlsEnvName) == "true" {
 		cert := "/etc/admission-webhook/tls/tls.crt"
 		key := "/etc/admission-webhook/tls/tls.key"
 		logrus.Print("Listening on port 443...")
@@ -32,10 +38,12 @@ func main() {
 	}
 }
 
-// ServeHealth returns 200 when things are good
 func ServeHealth(w http.ResponseWriter, r *http.Request) {
 	logrus.WithField("uri", r.RequestURI).Debug("healthy")
-	fmt.Fprint(w, "OK")
+	_, err := fmt.Fprintf(w, "ok")
+	if err != nil {
+		logrus.Errorf("Failed to send healthz response: %v", err)
+	}
 }
 
 // ServeValidatePods validates an admission request and then writes an admission
@@ -83,17 +91,13 @@ func ServeValidatePods(w http.ResponseWriter, r *http.Request) {
 func setLogger() {
 	logrus.SetLevel(logrus.DebugLevel)
 
-	lev := os.Getenv("LOG_LEVEL")
+	lev := os.Getenv(logEnvName)
 	if lev != "" {
 		llev, err := logrus.ParseLevel(lev)
 		if err != nil {
 			logrus.Fatalf("cannot set LOG_LEVEL to %q", lev)
 		}
 		logrus.SetLevel(llev)
-	}
-
-	if os.Getenv("LOG_JSON") == "true" {
-		logrus.SetFormatter(&logrus.JSONFormatter{})
 	}
 }
 

@@ -1,7 +1,7 @@
 package validation
 
 import (
-	"io/ioutil"
+	"io"
 	"testing"
 
 	"github.com/sirupsen/logrus"
@@ -44,6 +44,6 @@ func TestValidatePod(t *testing.T) {
 
 func logger() *logrus.Entry {
 	mute := logrus.StandardLogger()
-	mute.Out = ioutil.Discard
+	mute.Out = io.Discard
 	return mute.WithField("logger", "test")
 }

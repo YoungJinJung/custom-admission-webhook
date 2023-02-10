@@ -2,34 +2,28 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: simple-kubernetes-webhook
-  name: simple-kubernetes-webhook
-  namespace: default
+    app: custom-admission-webhook
+  name: custom-admission-webhook
+  namespace: kube-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: simple-kubernetes-webhook
+      app: custom-admission-webhook
   template:
     metadata:
       labels:
-        app: simple-kubernetes-webhook
+        app: custom-admission-webhook
     spec:
-      tolerations:
-        - key: acme.com/lifespan-remaining
-          operator: Exists
-          effect: NoSchedule
       containers:
-        - image: simple-kubernetes-webhook:latest
+        - image: custom-admission-webhook:latest
           imagePullPolicy: Never
-          name: simple-kubernetes-webhook
+          name: custom-admission-webhook
           env:
             - name: TLS
               value: "true"
             - name: LOG_LEVEL
               value: "trace"
-            - name: LOG_JSON
-              value: "false"
           volumeMounts:
             - name: tls
               mountPath: "/etc/admission-webhook/tls"
@@ -37,4 +31,4 @@ spec:
       volumes:
         - name: tls
           secret:
-            secretName: simple-kubernetes-webhook-tls
+            secretName: custom-admission-webhook-tls

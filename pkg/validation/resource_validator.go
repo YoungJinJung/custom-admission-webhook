@@ -2,11 +2,16 @@ package validation
 
 import (
 	"fmt"
-
+	"strings"
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 )
-
+const (
+	empty = ""
+	limits = "limits"
+	reqeusts = "reqeusts"
+	delimiter = "."
+)
 // resourceValidator is a container for validating the name of pods
 type resourceValidator struct {
 	Logger logrus.FieldLogger
@@ -20,45 +25,63 @@ func (n resourceValidator) Name() string {
 	return "resource_validator"
 }
 
+var resources = [4]corev1.ResourceName{
+	corev1.ResourceRequestsCPU,
+	corev1.ResourceLimitsCPU,
+	corev1.ResourceRequestsMemory,
+	corev1.ResourceLimitsMemory,
+}
+
 // Validate inspects the name of a given pod and returns validation.
 // The returned validation is only valid if the pod name does not contain some
 // bad string.
 func (n resourceValidator) Validate(pod *corev1.Pod) (validation, error) {
+	var validMsg string
+	var resourceList corev1.ResourceList
+	var resourceName corev1.ResourceName
+
 	for _, container := range pod.Spec.Containers {
-		cpuSetMsg, cpuNonZeroMsg  := validateResource(container.Resources.Limits, "limit", corev1.ResourceCPU)
-		if cpuNonZeroMsg != "" {
-			v := validation{
-				Valid:  false,
-				Reason: cpuNonZeroMsg,
+		for index, resource := range resources {
+			arr := strings.Split(resource.String(), delimiter)
+			if (strings.Compare(arr[0], limits) == 0){
+				resourceList = container.Resources.Limits
+			} else {
+				resourceList = container.Resources.Requests
 			}
-			return v, nil
-		}
-		if cpuSetMsg != "" {
-			v := validation{
-				Valid:  false,
-				Reason: cpuSetMsg,
+
+			if index < 2 {
+				resourceName = corev1.ResourceCPU
+			} else {
+				resourceName = corev1.ResourceMemory
 			}
-			return v, nil
-		}
+			validMsg = validateResource(resourceList, reqeusts, resourceName)
+			if validMsg != empty {
+				v := validation{
+					Valid:  false,
+					Reason: validMsg,
+				}
+				return v, nil
+			}
+		}		
 	}
 
-	return validation{Valid: true, Reason: "valid resource"}, nil
+	return validation{Valid: true, Reason: successValidationMsg}, nil
 }
 
 
-func validateResource(resList corev1.ResourceList, resourceName string, name corev1.ResourceName) (string, string){
-	if !isResourceSet(resList, name) {
+func validateResource(resList corev1.ResourceList, resourceName string, name corev1.ResourceName) string{
+	if !isEmpty(resList, name) {
 		msg := fmt.Sprintf("'%s' resource %s must be specified.", name, resourceName)
-		return msg, ""
+		return msg
 	}
-	if !isResourceNonZero(resList, name) {
+	if !isNonZero(resList, name) {
 		msg := fmt.Sprintf("'%s' resource %s must be a nonzero value.", name, resourceName)
-		return "", msg
+		return msg
 	}
-	return "", ""
+	return empty
 }
 
-func isResourceSet(resList corev1.ResourceList, name corev1.ResourceName) bool {
+func isEmpty(resList corev1.ResourceList, name corev1.ResourceName) bool {
 	var missing = resList == nil
 	if !missing {
 		if _, ok := resList[name]; !ok {
@@ -68,7 +91,7 @@ func isResourceSet(resList corev1.ResourceList, name corev1.ResourceName) bool {
 	return !missing
 }
 
-func isResourceNonZero(resList corev1.ResourceList, name corev1.ResourceName) bool {
+func isNonZero(resList corev1.ResourceList, name corev1.ResourceName) bool {
 	if resList == nil {
 		return true
 	}
