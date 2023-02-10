@@ -29,8 +29,6 @@ echo
 echo ">> ValidationWebhookConfiguration caBundle:"
 CA_BUNDLE=$(cat ca.crt | base64)
 
-cp hack/manifests/cluster-config/validatingwebhook.yaml.template hack/manifests/cluster-config/validatingwebhook-ca-bundle.yaml
-
-sed "s|\${CA_BUNDLE}|${CA_BUNDLE}|g" hack/manifests/cluster-config/validatingwebhook-ca-bundle.yaml | kubectl apply -f -
+sed "s|\${CA_BUNDLE}|${CA_BUNDLE}|g" hack/manifests/cluster-config/validatingwebhook.yaml.template | kubectl apply -f -
 
 rm ca.crt ca.key ca.srl server.crt server.csr server.key

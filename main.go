@@ -13,7 +13,6 @@ import (
 )
 const (
 	logEnvName = "LOG_LEVEL"
-	tlsEnvName = "TLS"
 	healthURI = "/healthz="
 	validateURI = "/validate"
 )
@@ -25,17 +24,10 @@ func main() {
 	http.HandleFunc(validateURI, ServeValidatePods)
 	http.HandleFunc(healthURI, ServeHealth)
 
-	// start the server
-	// listens to clear text http on port 8080 unless TLS env var is set to "true"
-	if os.Getenv(tlsEnvName) == "true" {
-		cert := "/etc/admission-webhook/tls/tls.crt"
-		key := "/etc/admission-webhook/tls/tls.key"
-		logrus.Print("Listening on port 443...")
-		logrus.Fatal(http.ListenAndServeTLS(":443", cert, key, nil))
-	} else {
-		logrus.Print("Listening on port 8080...")
-		logrus.Fatal(http.ListenAndServe(":8080", nil))
-	}
+	cert := "/etc/admission-webhook/tls/tls.crt"
+	key := "/etc/admission-webhook/tls/tls.key"
+	logrus.Print("Listening on port 443...")
+	logrus.Fatal(http.ListenAndServeTLS(":443", cert, key, nil))
 }
 
 func ServeHealth(w http.ResponseWriter, r *http.Request) {
