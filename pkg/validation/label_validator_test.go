@@ -9,11 +9,14 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-func TesResourcesValidatorValidate(t *testing.T) {
+func TestLabelsValidatorValidate(t *testing.T) {
 	t.Run("Success Case", func(t *testing.T) {
 		pod := &corev1.Pod{
 			ObjectMeta: v1.ObjectMeta{
 				Name: "lgudax",
+				Labels: map[string]string{
+					"apps": "test",
+				},
 			},
 			Spec: corev1.PodSpec{
 				Containers: []corev1.Container{{
@@ -32,12 +35,12 @@ func TesResourcesValidatorValidate(t *testing.T) {
 			},
 		}
 
-		v, err := resourceValidator{logger()}.Validate(pod)
+		v, err := labelValidator{logger()}.Validate(pod)
 		assert.Nil(t, err)
 		assert.True(t, v.Valid)
 	})
 
-	t.Run("Failed Case#1 Missing resource", func(t *testing.T) {
+	t.Run("Failed Case#1 Missing labels", func(t *testing.T) {
 		pod := &corev1.Pod{
 			ObjectMeta: v1.ObjectMeta{
 				Name: "lgudax",
@@ -49,34 +52,7 @@ func TesResourcesValidatorValidate(t *testing.T) {
 			},
 		}
 
-		v, err := resourceValidator{logger()}.Validate(pod)
-		assert.Nil(t, err)
-		assert.False(t, v.Valid)
-	})
-
-	t.Run("Failed Case#1 zero assign resource", func(t *testing.T) {
-		pod := &corev1.Pod{
-			ObjectMeta: v1.ObjectMeta{
-				Name: "lgudax",
-			},
-			Spec: corev1.PodSpec{
-				Containers: []corev1.Container{{
-					Name:  "lgudax",
-					Resources: corev1.ResourceRequirements{
-						Requests: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("0m"),
-							corev1.ResourceMemory: resource.MustParse("0Mi"),
-						},
-						Limits: corev1.ResourceList{
-							corev1.ResourceCPU: resource.MustParse("0m"),
-							corev1.ResourceMemory: resource.MustParse("500Mi"),
-						},
-					},
-				}},
-			},
-		}
-
-		v, err := resourceValidator{logger()}.Validate(pod)
+		v, err := labelValidator{logger()}.Validate(pod)
 		assert.Nil(t, err)
 		assert.False(t, v.Valid)
 	})

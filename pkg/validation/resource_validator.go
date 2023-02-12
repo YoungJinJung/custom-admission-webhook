@@ -12,7 +12,7 @@ const (
 	reqeusts = "reqeusts"
 	delimiter = "."
 )
-// resourceValidator is a container for validating the name of pods
+// resourceValidator is a container for validating the resources of pods
 type resourceValidator struct {
 	Logger logrus.FieldLogger
 }
@@ -32,9 +32,8 @@ var resources = [4]corev1.ResourceName{
 	corev1.ResourceLimitsMemory,
 }
 
-// Validate inspects the name of a given pod and returns validation.
-// The returned validation is only valid if the pod name does not contain some
-// bad string.
+// Validate inspects the resources(requests, limits) of a given pod and returns validation.
+// Validation is only valid if Resourse exist pod and values is not zero.
 func (n resourceValidator) Validate(pod *corev1.Pod) (validation, error) {
 	var validMsg string
 	var resourceList corev1.ResourceList
