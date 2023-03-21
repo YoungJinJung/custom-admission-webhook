@@ -7,23 +7,25 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/u-cto-devops/dax-custom-webhook/pkg/admission"
 	"github.com/sirupsen/logrus"
-	"github.com/YoungJinJung/custom-admission-webhook/pkg/admission"
 	admissionv1 "k8s.io/api/admission/v1"
 )
+
 const (
-	logEnvName = "LOG_LEVEL"
-	healthURI = "/healthz="
+	logEnvName  = "LOG_LEVEL"
+	healthURI   = "/health"
 	validateURI = "/validate"
 )
 
 func main() {
-	setLogger()
+	initLogger()
 
 	// handle our core application
 	http.HandleFunc(validateURI, ServeValidatePods)
 	http.HandleFunc(healthURI, ServeHealth)
 
+	// start the server
 	cert := "/etc/admission-webhook/tls/tls.crt"
 	key := "/etc/admission-webhook/tls/tls.key"
 	logrus.Print("Listening on port 443...")
@@ -78,9 +80,8 @@ func ServeValidatePods(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "%s", jout)
 }
 
-// setLogger sets the logger using env vars, it defaults to text logs on
-// debug level unless otherwise specified
-func setLogger() {
+// initLogger sets the logger using env vars, it defaults to text logs on
+func initLogger() {
 	logrus.SetLevel(logrus.DebugLevel)
 
 	lev := os.Getenv(logEnvName)

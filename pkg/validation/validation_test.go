@@ -7,9 +7,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
-
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestValidatePod(t *testing.T) {
@@ -18,6 +17,10 @@ func TestValidatePod(t *testing.T) {
 	pod := &corev1.Pod{
 		ObjectMeta: v1.ObjectMeta{
 			Name: "lgudax",
+			Labels: map[string]string{
+				"tags.datadoghq.com/env": "test-app",
+				"app":                    "test-app",
+			},
 		},
 		Spec: corev1.PodSpec{
 			Containers: []corev1.Container{{
@@ -25,11 +28,11 @@ func TestValidatePod(t *testing.T) {
 				Image: "busybox",
 				Resources: corev1.ResourceRequirements{
 					Requests: corev1.ResourceList{
-						corev1.ResourceCPU: resource.MustParse("100m"),
+						corev1.ResourceCPU:    resource.MustParse("100m"),
 						corev1.ResourceMemory: resource.MustParse("500Mi"),
 					},
 					Limits: corev1.ResourceList{
-						corev1.ResourceCPU: resource.MustParse("100m"),
+						corev1.ResourceCPU:    resource.MustParse("100m"),
 						corev1.ResourceMemory: resource.MustParse("500Mi"),
 					},
 				},

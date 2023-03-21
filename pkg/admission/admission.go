@@ -9,7 +9,7 @@ import (
 	"net/http"
 
 	"github.com/sirupsen/logrus"
-	"github.com/YoungJinJung/custom-admission-webhook/pkg/validation"
+	"github.com/u-cto-devops/dax-custom-webhook/pkg/validation"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -1,4 +1,4 @@
-module github.com/YoungJinJung/custom-admission-webhook
+module github.com/u-cto-devops/dax-custom-webhook
 
 go 1.19
 

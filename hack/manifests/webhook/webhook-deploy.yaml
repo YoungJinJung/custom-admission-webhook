@@ -2,23 +2,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: custom-admission-webhook
-  name: custom-admission-webhook
+    app: dax-custom-webhook
+  name: dax-custom-webhook
   namespace: kube-system
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: custom-admission-webhook
+      app: dax-custom-webhook
   template:
     metadata:
       labels:
-        app: custom-admission-webhook
+        app: dax-custom-webhook
     spec:
       containers:
-        - image: custom-admission-webhook:latest
-          imagePullPolicy: Never
-          name: custom-admission-webhook
+        - image: 246092231098.dkr.ecr.ap-northeast-2.amazonaws.com/dax-custom-webhook:latest
+          imagePullPolicy: Always
+          name: dax-custom-webhook
           env:
             - name: TLS
               value: "true"
@@ -31,4 +31,4 @@ spec:
       volumes:
         - name: tls
           secret:
-            secretName: custom-admission-webhook-tls
+            secretName: dax-custom-webhook-tls

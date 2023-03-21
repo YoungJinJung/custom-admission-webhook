@@ -9,7 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 )
 
-func TesResourcesValidatorValidate(t *testing.T) {
+func TestResourcesValidator(t *testing.T) {
 	t.Run("Success Case", func(t *testing.T) {
 		pod := &corev1.Pod{
 			ObjectMeta: v1.ObjectMeta{

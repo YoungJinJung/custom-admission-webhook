@@ -3,15 +3,15 @@
 openssl genrsa -out ca.key 2048
 
 openssl req -new -x509 -days 365 -key ca.key \
-  -subj "/C=AU/CN=custom-admission-webhook"\
+  -subj "/C=AU/CN=dax-custom-webhook.kube-system.svc"\
   -out ca.crt
 
 openssl req -newkey rsa:2048 -nodes -keyout server.key \
-  -subj "/C=AU/CN=custom-admission-webhook" \
+  -subj "/C=AU/CN=dax-custom-webhook.kube-system.svc" \
   -out server.csr
 
 openssl x509 -req \
-  -extfile <(printf "subjectAltName=DNS:custom-admission-webhook.kube-system.svc") \
+  -extfile <(printf "subjectAltName=DNS:dax-custom-webhook.kube-system.svc") \
   -days 365 \
   -in server.csr \
   -CA ca.crt -CAkey ca.key -CAcreateserial \
@@ -19,7 +19,7 @@ openssl x509 -req \
 
 echo
 echo ">> Generating kube secrets..."
-kubectl create secret tls custom-admission-webhook-tls \
+kubectl create secret tls dax-custom-webhook-tls \
   --namespace=kube-system \
   --cert=server.crt \
   --key=server.key \

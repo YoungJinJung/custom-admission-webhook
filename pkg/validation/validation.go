@@ -4,9 +4,11 @@ import (
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 )
+
 const (
 	successValidationMsg = "Pod Validation"
 )
+
 type Validator struct {
 	Logger *logrus.Entry
 }
@@ -29,6 +31,7 @@ type validation struct {
 func (v *Validator) ValidatePod(pod *corev1.Pod) (validation, error) {
 	validations := []podValidator{
 		resourceValidator{v.Logger},
+		labelValidator{v.Logger},
 	}
 
 	for _, v := range validations {

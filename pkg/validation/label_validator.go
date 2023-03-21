@@ -2,6 +2,8 @@ package validation
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/sirupsen/logrus"
 	corev1 "k8s.io/api/core/v1"
 )
@@ -11,25 +13,38 @@ type labelValidator struct {
 	Logger logrus.FieldLogger
 }
 
+// validLabels is the list of valid label keys for pods
+var validLabels = []string{
+	"app",
+	"tags.datadoghq.com/env",
+}
+
 // labelValidator implements the podValidator interface
 var _ podValidator = (*labelValidator)(nil)
 
 // Name returns the name of labelValidator
-func (n labelValidator) Name() string {
+func (l labelValidator) Name() string {
 	return "label_validator"
 }
 
-
-// Validate inspects the labels of a given pod and returns validation.
-// Validation is only valid if the pod labels exist
-func (n labelValidator) Validate(pod *corev1.Pod) (validation, error) {
-	if pod.Labels == nil {
-		v := validation{
-			Valid:  false,
-			Reason: fmt.Sprintln("pod labels isn't exist"),
+// validation is only valid if label exist in pod and key contains "validLabels".
+func (l labelValidator) Validate(pod *corev1.Pod) (validation, error) {
+	for _, k := range validLabels {
+		found := false
+		for labelKey := range pod.Labels {
+			if strings.EqualFold(k, labelKey) {
+				found = true
+			}
 		}
-		return v, nil
+		if !found {
+			validMsg := fmt.Sprintf("Label key must contain \"%s\" in Label.", k)
+			v := validation{
+				Valid:  false,
+				Reason: validMsg,
+			}
+			return v, nil
+		}
 	}
 
-	return validation{Valid: true, Reason: "valid name"}, nil
+	return validation{Valid: true, Reason: successValidationMsg}, nil
 }
